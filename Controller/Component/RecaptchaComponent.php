@@ -6,7 +6,7 @@
  * Redistributions of files must retain the above copyright notice.
  *
  * @copyright Copyright 2009-2010, Cake Development Corporation (http://cakedc.com)
- * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
+ * @license   MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
 App::uses('HttpSocket', 'Network/Http');
@@ -14,12 +14,12 @@ App::uses('HttpSocket', 'Network/Http');
 /**
  * CakePHP Recaptcha component
  *
- * @package recaptcha
+ * @package    recaptcha
  * @subpackage recaptcha.controllers.components
  */
 
-class RecaptchaComponent extends Component {
-
+class RecaptchaComponent extends Component
+{
 /**
  * Name
  *
@@ -32,7 +32,7 @@ class RecaptchaComponent extends Component {
  *
  * @var string
  */
-	public $apiUrl = 'http://www.google.com/recaptcha/api/verify';
+	public $apiUrl = 'https://www.google.com/recaptcha/api';
 
 /**
  * Private API Key
@@ -62,39 +62,41 @@ class RecaptchaComponent extends Component {
  */
 	public $settings = array();
 
- /**
+/**
  * Default Options
  *
  * @var array
  */
-        protected $_defaults = array(
+	protected $_defaults = array(
 		'errorField' => 'recaptcha',
-		'actions' => array()
-        );
- 
- /**
+		'actions'    => array()
+	);
+
+/**
  * Constructor
  *
  * @param ComponentCollection $collection A ComponentCollection this component can use to lazy load its components
- * @param array $settings Array of configuration settings
+ * @param array               $settings   Array of configuration settings
  */
-        public function __construct(ComponentCollection $collection, $settings = array()) {
-            parent::__construct($collection, $settings);
-            $this->Controller = $collection->getController();
-            $this->_defaults['modelClass'] = $this->Controller->modelClass;
-            $this->settings = array_merge($this->_defaults, $settings);
-            $this->actions = array_merge($this->actions, $this->settings['actions']);
-            unset($this->settings['actions']);
-    }
-    
- /**
- * Callback
+	public function __construct(ComponentCollection $collection, $settings = array())
+	{
+		parent::__construct($collection, $settings);
+		$this->Controller              = $collection->getController();
+		$this->_defaults['modelClass'] = $this->Controller->modelClass;
+		$this->settings                = array_merge($this->_defaults, $settings);
+		$this->actions                 = array_merge($this->actions, $this->settings['actions']);
+		unset($this->settings['actions']);
+	}
+
+/**
+ * Set up Recaptcha
  *
- * @param object Controller object
- * @param Array $settings 
+ * @param Controller $controller
+ * @throws Exception
  */
-	public function initialize(Controller $controller) {
-		if ($controller->name == 'CakeError') {
+	public function initialize(Controller $controller)
+	{
+		if ($controller->name === 'CakeError') {
 			return;
 		}
 		$this->privateKey = Configure::read('Recaptcha.privateKey');
@@ -109,12 +111,13 @@ class RecaptchaComponent extends Component {
 		}
 	}
 
- /**
- * Callback
+/**
+ * Set up Recaptcha for controller
  *
- * @param object Controller object
+ * @param Controller $controller
  */
-	public function startup(Controller $controller) {
+	public function startup(Controller $controller)
+	{
 		extract($this->settings);
 		if ($this->enabled == true) {
 			$this->Controller->helpers[] = 'Recaptcha.Recaptcha';
@@ -125,25 +128,26 @@ class RecaptchaComponent extends Component {
 			$this->Controller->{$modelClass}->recaptcha = true;
 			if (in_array($this->Controller->action, $this->actions)) {
 				if (!$this->verify()) {
-					$this->Controller->{$modelClass}->recaptcha = false;
+					$this->Controller->{$modelClass}->recaptcha      = false;
 					$this->Controller->{$modelClass}->recaptchaError = $this->error;
 				}
 			}
 		}
-
 	}
 
 /**
- * Verifies the recaptcha input
+ * Verifies the Recaptcha input
  *
  * Please note that you still have to pass the result to the model and do
  * the validation there to make sure the data is not saved!
  *
  * @return boolean True if the response was correct
  */
-	public function verify() {
-		if (isset($this->Controller->request->data['recaptcha_challenge_field']) && 
-			isset($this->Controller->request->data['recaptcha_response_field'])) {
+	public function verify()
+	{
+		if (isset($this->Controller->request->data['recaptcha_challenge_field']) &&
+		  isset($this->Controller->request->data['recaptcha_response_field'])
+		) {
 
 			$response = $this->_getApiResponse();
 			$response = explode("\n", $response->body());
@@ -172,13 +176,13 @@ class RecaptchaComponent extends Component {
  *
  * @return string
  */
-	protected function _getApiResponse() {
+	protected function _getApiResponse()
+	{
 		$Socket = new HttpSocket();
 		return $Socket->post($this->apiUrl, array(
-			'privatekey'=> $this->privateKey,
+			'privatekey' => $this->privateKey,
 			'remoteip' => env('REMOTE_ADDR'),
-			'challenge' => $this->Controller->request->data['recaptcha_challenge_field'],
-			'response' => $this->Controller->request->data['recaptcha_response_field']));
+			'challenge'  => $this->Controller->request->data['recaptcha_challenge_field'],
+			'response'   => $this->Controller->request->data['recaptcha_response_field']));
 	}
-
 }
