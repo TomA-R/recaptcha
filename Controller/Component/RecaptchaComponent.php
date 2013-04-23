@@ -32,7 +32,7 @@ class RecaptchaComponent extends Component
  *
  * @var string
  */
-	public $apiUrl = 'https://www.google.com/recaptcha/api';
+	public $apiUrl = 'https://www.google.com/recaptcha/api/verify';
 
 /**
  * Private API Key
